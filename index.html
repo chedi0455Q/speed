@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>N30N RUN — Cyberpunk Infinite Runner</title>
 
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- Google Fonts : Orbitron (cyberpunk display) + Share Tech Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
@@ -27,7 +25,6 @@
   </script>
 
   <style>
-    /* ─── Reset & Base ───────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -47,8 +44,6 @@
       overflow: hidden;
       user-select: none;
     }
-
-    /* ─── Scanlines overlay ──────────────────────────────────────── */
     body::after {
       content: '';
       position: fixed;
@@ -63,8 +58,7 @@
       pointer-events: none;
       z-index: 100;
     }
-
-    /* ─── Canvas wrapper ─────────────────────────────────────────── */
+    
     #game-wrap {
       position: relative;
       display: flex;
@@ -82,7 +76,6 @@
       border-radius: 2px;
     }
 
-    /* ─── HUD overlay (Tailwind + custom) ───────────────────────── */
     #hud {
       position: absolute;
       top: 0; left: 0; right: 0;
@@ -106,7 +99,6 @@
       line-height: 1.1;
     }
 
-    /* ─── Overlay screens (start / game-over) ────────────────────── */
     .screen {
       position: absolute;
       inset: 0;
@@ -160,7 +152,6 @@
       box-shadow: 0 0 24px rgba(255,45,120,.35), inset 0 0 20px rgba(255,45,120,.08);
     }
 
-    /* ─── Double-jump indicator ──────────────────────────────────── */
     #jump-pips {
       position: absolute;
       bottom: .8rem;
@@ -184,14 +175,12 @@
       opacity: .3;
     }
 
-    /* ─── Speed gauge ────────────────────────────────────────────── */
     #speed-bar-fill {
       transition: width .3s ease, background .3s ease;
       height: 100%;
       border-radius: 1px;
     }
 
-    /* ─── Flicker title animation ────────────────────────────────── */
     @keyframes flicker {
       0%,19%,21%,23%,25%,54%,56%,100% { opacity: 1; text-shadow: 0 0 20px var(--cyan), 0 0 60px var(--cyan); }
       20%,24%,55% { opacity: .4; text-shadow: none; }
@@ -216,27 +205,23 @@
 
 <body class="flex flex-col items-center justify-center min-h-screen gap-3">
 
-  <!-- Title bar -->
   <div class="text-center z-10">
     <h1 class="font-display text-2xl font-black tracking-widest flicker glitch" style="color:var(--cyan)">
       N30N_RUN
     </h1>
-    <p class="text-xs tracking-widest opacity-40 mt-1" style="color:var(--pink)">// INFINITE RUNNER · CYBERPUNK EDITION</p>
+    <p class="text-xs tracking-widest opacity-40 mt-1" style="color:var(--pink)"></p>
   </div>
 
-  <!-- Game wrapper -->
   <div id="game-wrap" class="relative">
 
     <canvas id="gameCanvas"></canvas>
 
-    <!-- HUD -->
     <div id="hud">
       <div>
         <p class="hud-stat" style="color:var(--cyan)">Score</p>
         <p class="hud-val" id="hud-score" style="color:var(--cyan); text-shadow: 0 0 10px var(--cyan)">0</p>
       </div>
       <div class="text-center">
-        <!-- Speed gauge -->
         <p class="hud-stat text-center mb-1" style="color:var(--yellow)">Vitesse</p>
         <div style="width:100px; height:4px; background:var(--border); border-radius:1px; overflow:hidden;">
           <div id="speed-bar-fill" style="width:10%; background:var(--cyan);"></div>
@@ -248,16 +233,14 @@
       </div>
     </div>
 
-    <!-- Double jump pips -->
     <div id="jump-pips">
       <div class="pip" id="pip-1"></div>
       <div class="pip" id="pip-2"></div>
     </div>
 
-    <!-- START SCREEN -->
     <div class="screen fade-in" id="screen-start">
       <p class="screen-title text-3xl flicker" style="color:var(--cyan)">N30N_RUN</p>
-      <p class="text-xs tracking-widest opacity-60" style="color:var(--yellow)">// DOUBLE JUMP · SURVIVE THE GRID</p>
+      <p class="text-xs tracking-widest opacity-60" style="color:var(--yellow)"></p>
       <div class="flex flex-col gap-2 mt-2 items-center text-xs opacity-50 font-mono">
         <p>⎵ SPACE / ↑ FLÈCHE · Sauter</p>
         <p>TAP sur mobile · Sauter</p>
@@ -266,7 +249,6 @@
       <p class="text-xs opacity-30 font-mono mt-2">Double saut disponible — utilisez-le !</p>
     </div>
 
-    <!-- GAME OVER SCREEN -->
     <div class="screen hidden" id="screen-gameover">
       <p class="screen-title text-2xl" style="color:var(--pink); text-shadow: 0 0 20px var(--pink)">GAME OVER</p>
       <div class="text-center mt-1">
@@ -283,25 +265,16 @@
 
   </div>
 
-  <!-- Controls reminder -->
   <div class="text-xs font-mono opacity-20 tracking-widest z-10">
     SPACE / ↑ / TAP — SAUTER &nbsp;·&nbsp; DOUBLE SAUT AUTORISÉ
   </div>
 
-
-  <!-- ══════════════════════════════════════════════════════════════
-       JAVASCRIPT — Moteur de jeu complet
-  ══════════════════════════════════════════════════════════════════ -->
   <script>
   'use strict';
 
-  /* ──────────────────────────────────────────────────────────────────
-     1. SETUP CANVAS — Dimensions responsives
-  ────────────────────────────────────────────────────────────────── */
   const canvas = document.getElementById('gameCanvas');
   const ctx    = canvas.getContext('2d');
 
-  // Calcule la taille du canvas selon la fenêtre
   function resizeCanvas() {
     const maxW = Math.min(window.innerWidth  - 32, 800);
     const maxH = Math.min(window.innerHeight - 180, 340);
@@ -311,24 +284,11 @@
   resizeCanvas();
   window.addEventListener('resize', () => { resizeCanvas(); });
 
-  /* ──────────────────────────────────────────────────────────────────
-     2. AUDIO ENGINE — Sons générés via WebAudioContext
-     On génère des bips synthétiques sans fichier externe.
-  ────────────────────────────────────────────────────────────────── */
   let audioCtx = null;
-
-  // Crée l'AudioContext au premier interaction utilisateur (politique navigateur)
   function ensureAudio() {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
 
-  /**
-   * Joue un son synthétique court.
-   * @param {number} freq     Fréquence en Hz
-   * @param {number} duration Durée en secondes
-   * @param {string} type     Type d'onde : 'sine' | 'square' | 'sawtooth'
-   * @param {number} vol      Volume [0..1]
-   */
   function playTone(freq, duration, type = 'square', vol = 0.15) {
     if (!audioCtx) return;
     const osc  = audioCtx.createOscillator();
@@ -338,8 +298,6 @@
 
     osc.type      = type;
     osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-
-    // Enveloppe : attaque immédiate, déclin rapide
     gain.gain.setValueAtTime(vol, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
 
@@ -347,24 +305,16 @@
     osc.stop(audioCtx.currentTime + duration);
   }
 
-  // Bip de saut (1er saut : note aiguë)
   function soundJump()       { playTone(440,  .12, 'square',   .12); }
-  // Bip de double saut (note plus haute)
   function soundDoubleJump() { playTone(660,  .10, 'square',   .10); playTone(880, .08, 'sine', .06); }
-  // Bip de mort (son descendent)
   function soundDeath() {
     playTone(220, .15, 'sawtooth', .2);
     setTimeout(() => playTone(150, .2, 'sawtooth', .15), 100);
     setTimeout(() => playTone(80,  .3, 'sawtooth', .1), 250);
   }
-  // Nouveau record
   function soundRecord() {
     [523,659,784,1047].forEach((f,i) => setTimeout(() => playTone(f, .1, 'sine', .1), i * 80));
   }
-
-  /* ──────────────────────────────────────────────────────────────────
-     3. CONSTANTES & PARAMÈTRES
-  ────────────────────────────────────────────────────────────────── */
   const COLORS = {
     bg:       '#05050f',
     grid:     'rgba(0,255,231,0.04)',
@@ -376,26 +326,18 @@
     ground:   'rgba(0,255,231,0.15)',
   };
 
-  // Physique
-  const GRAVITY       = 0.55;   // Accélération gravitationnelle (px/frame²)
-  const JUMP_FORCE    = -13;    // Vélocité verticale au saut (négatif = vers le haut)
-  const GROUND_Y      = () => canvas.height - 60; // Y du sol (dynamique selon canvas)
-
-  // Vitesse initiale et progression
+  const GRAVITY       = 0.55; 
+  const JUMP_FORCE    = -13;    
+  const GROUND_Y      = () => canvas.height - 60; 
   const SPEED_INIT    = 5;
   const SPEED_MAX     = 18;
-  // Incrément de vitesse toutes les N frames
-  const SPEED_STEP    = 0.0008;  // Multiplicateur progressif
+  const SPEED_STEP    = 0.0008;
 
-  // Obstacles
-  const OBS_MIN_GAP   = 55;     // Espacement min entre obstacles (en pixels / vitesse)
+
+  const OBS_MIN_GAP   = 55;   
   const OBS_MAX_GAP   = 130;
-
-  /* ──────────────────────────────────────────────────────────────────
-     4. ÉTAT DU JEU
-  ────────────────────────────────────────────────────────────────── */
   const state = {
-    phase: 'start',   // 'start' | 'playing' | 'dead'
+    phase: 'start',  
     score: 0,
     best:  parseInt(localStorage.getItem('n30n_best') || '0'),
     speed: SPEED_INIT,
@@ -403,21 +345,17 @@
     newRecord: false,
   };
 
-  /* ──────────────────────────────────────────────────────────────────
-     5. JOUEUR
-  ────────────────────────────────────────────────────────────────── */
   const player = {
     x:        80,
     y:        0,
     w:        22,
     h:        22,
-    vy:       0,       // Vitesse verticale
+    vy:       0,       
     onGround: false,
-    jumpsLeft: 2,      // Double saut : 2 sauts disponibles
+    jumpsLeft: 2,      
 
-    // Effets visuels
-    trailPoints: [],   // Traîne de particules
-    squishY:    1,     // Effet d'écrasement au saut
+    trailPoints: [],  
+    squishY:    1,     
     squishX:    1,
 
     reset() {
@@ -430,15 +368,12 @@
       this.squishX   = 1;
     },
 
-    /** Applique un saut si des sauts sont disponibles */
     jump() {
       if (this.jumpsLeft <= 0) return;
       const isDouble = !this.onGround;
       this.vy        = JUMP_FORCE;
       this.onGround  = false;
       this.jumpsLeft--;
-
-      // Squish visuel (aplatissement puis étirement)
       this.squishY = 0.5;
       this.squishX = 1.5;
 
@@ -447,7 +382,6 @@
     },
 
     update() {
-      // Gravité
       this.vy += GRAVITY;
       this.y  += this.vy;
 
@@ -462,11 +396,8 @@
         this.onGround = false;
       }
 
-      // Rétablissement progressif du squish
       this.squishY += (1 - this.squishY) * 0.25;
       this.squishX += (1 - this.squishX) * 0.25;
-
-      // Traîne : enregistre la position toutes les 2 frames
       if (state.frame % 2 === 0) {
         this.trailPoints.unshift({ x: this.x, y: this.y, alpha: 0.4 });
         if (this.trailPoints.length > 8) this.trailPoints.pop();
@@ -480,7 +411,6 @@
       const hw = (this.w / 2) * this.squishX;
       const hh = (this.h / 2) * this.squishY;
 
-      // Traîne cyan
       this.trailPoints.forEach((p, i) => {
         const ratio = 1 - i / this.trailPoints.length;
         ctx.save();
@@ -489,29 +419,20 @@
         ctx.fillRect(p.x, p.y, this.w * ratio * .7, this.h * ratio * .7);
         ctx.restore();
       });
-
-      // Lueur extérieure
       ctx.save();
       ctx.shadowColor = COLORS.cyan;
       ctx.shadowBlur  = 18;
-
-      // Corps du joueur (carré néon)
       ctx.fillStyle = COLORS.cyan;
       ctx.fillRect(cx - hw, cy - hh, hw * 2, hh * 2);
-
-      // Bordure intérieure plus claire
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth   = 1.5;
       ctx.strokeRect(cx - hw + 2, cy - hh + 2, hw * 2 - 4, hh * 2 - 4);
 
-      // "Oeil" : petit carré blanc
       ctx.fillStyle = COLORS.bg;
       ctx.fillRect(cx + 2, cy - 3, 5, 5);
 
       ctx.restore();
     },
-
-    /** AABB — Hitbox réduite (plus fair) */
     hitbox() {
       const margin = 4;
       return {
@@ -522,17 +443,12 @@
       };
     },
   };
-
-  /* ──────────────────────────────────────────────────────────────────
-     6. OBSTACLES
-  ────────────────────────────────────────────────────────────────── */
   const obstacles = [];
 
-  // Types d'obstacles
   const OBS_TYPES = [
-    { tag: 'low',   minH: 24, maxH: 38, color: COLORS.pink,   glow: COLORS.pink   }, // bas, franchissable en sautant
-    { tag: 'tall',  minH: 45, maxH: 70, color: COLORS.purple, glow: COLORS.purple }, // haut, nécessite timing
-    { tag: 'spike', minH: 20, maxH: 20, color: COLORS.yellow, glow: COLORS.yellow }, // pointe (triangle) — déco
+    { tag: 'low',   minH: 24, maxH: 38, color: COLORS.pink,   glow: COLORS.pink   }, 
+    { tag: 'tall',  minH: 45, maxH: 70, color: COLORS.purple, glow: COLORS.purple }, 
+    { tag: 'spike', minH: 20, maxH: 20, color: COLORS.yellow, glow: COLORS.yellow },
   ];
 
   function spawnObstacle() {
@@ -550,20 +466,17 @@
     });
   }
 
-  // Distance en frames avant le prochain obstacle
   let nextObstacleIn = 80;
 
   function updateObstacles() {
     nextObstacleIn--;
     if (nextObstacleIn <= 0) {
       spawnObstacle();
-      // Espacement basé sur vitesse courante (plus rapide = moins de temps entre obstacles)
       const gap    = OBS_MIN_GAP + Math.random() * (OBS_MAX_GAP - OBS_MIN_GAP);
       nextObstacleIn = Math.floor(gap / (state.speed / SPEED_INIT));
     }
 
     obstacles.forEach(o => { o.x -= state.speed; });
-    // Supprime hors-écran
     while (obstacles.length && obstacles[0].x + obstacles[0].w < 0) obstacles.shift();
   }
 
@@ -574,7 +487,6 @@
       ctx.shadowBlur  = 14;
 
       if (o.type === 'spike') {
-        // Triangle pointu
         ctx.fillStyle = o.color;
         ctx.beginPath();
         ctx.moveTo(o.x,           o.y + o.h);
@@ -582,19 +494,15 @@
         ctx.lineTo(o.x + o.w,     o.y + o.h);
         ctx.closePath();
         ctx.fill();
-        // Contour
         ctx.strokeStyle = '#ffffff44';
         ctx.lineWidth = 1;
         ctx.stroke();
       } else {
-        // Rectangle
         ctx.fillStyle = o.color + '33';
         ctx.fillRect(o.x, o.y, o.w, o.h);
         ctx.strokeStyle = o.color;
         ctx.lineWidth   = 1.5;
         ctx.strokeRect(o.x, o.y, o.w, o.h);
-
-        // Ligne intérieure verticale (style circuit)
         ctx.globalAlpha = .3;
         ctx.beginPath();
         ctx.moveTo(o.x + o.w / 2, o.y + 4);
@@ -608,7 +516,6 @@
   function checkCollisions() {
     const hb = player.hitbox();
     return obstacles.some(o => {
-      // Pour les spikes, hitbox réduite
       const ob = o.type === 'spike'
         ? { x: o.x + 3, y: o.y + 6, w: o.w - 6, h: o.h - 6 }
         : o;
@@ -621,17 +528,11 @@
     });
   }
 
-  /* ──────────────────────────────────────────────────────────────────
-     7. ARRIÈRE-PLAN CYBERPUNK
-     Trois couches : grille de fond + bâtiments silhouette + sol lumineux
-  ────────────────────────────────────────────────────────────────── */
-  // Bâtiments générés procéduralement
   const buildings = Array.from({ length: 20 }, (_, i) => ({
     x:     i * 80 - 40,
     w:     30 + Math.random() * 50,
     h:     40 + Math.random() * 100,
     color: Math.random() > .5 ? '#0a0a2a' : '#06061a',
-    // Fenêtres lumineuses
     windows: Array.from({ length: 6 }, () => ({
       wx: Math.random(),
       wy: Math.random(),
@@ -640,18 +541,15 @@
     })),
   }));
 
-  let bgScrollX = 0;   // Scroll parallaxe (couche lente)
+  let bgScrollX = 0;   
 
   function drawBackground() {
-    // Ciel dégradé
     const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
     grad.addColorStop(0,   '#05050f');
     grad.addColorStop(.6,  '#08081c');
     grad.addColorStop(1,   '#0a0420');
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-    // Grille de perspective (parallaxe lente)
     ctx.save();
     ctx.strokeStyle = COLORS.grid;
     ctx.lineWidth   = 1;
@@ -674,8 +572,6 @@
     }
     ctx.globalAlpha = 1;
     ctx.restore();
-
-    // Bâtiments silhouettes (parallaxe × 0.3)
     const bScrollX = (bgScrollX * 0.3) % (buildings.length * 80);
     buildings.forEach(b => {
       const bx = (b.x - bScrollX * 0.3 + buildings.length * 80) % (buildings.length * 80 + 100) - 80;
@@ -684,7 +580,6 @@
       ctx.fillStyle = b.color;
       ctx.fillRect(bx, by, b.w, b.h);
 
-      // Fenêtres
       b.windows.forEach(w => {
         if (!w.on) return;
         ctx.save();
@@ -694,7 +589,6 @@
         ctx.restore();
       });
 
-      // Contour toit
       ctx.save();
       ctx.strokeStyle = 'rgba(0,255,231,.05)';
       ctx.lineWidth = 1;
@@ -707,8 +601,6 @@
 
   function drawGround() {
     const gy = GROUND_Y();
-
-    // Sol lumineux
     ctx.save();
     ctx.shadowColor = COLORS.cyan;
     ctx.shadowBlur  = 12;
@@ -718,16 +610,12 @@
     ctx.moveTo(0, gy);
     ctx.lineTo(canvas.width, gy);
     ctx.stroke();
-
-    // Lueur sous le sol
     const groundGrad = ctx.createLinearGradient(0, gy, 0, gy + 30);
     groundGrad.addColorStop(0, 'rgba(0,255,231,.08)');
     groundGrad.addColorStop(1, 'transparent');
     ctx.fillStyle = groundGrad;
     ctx.fillRect(0, gy, canvas.width, 30);
     ctx.restore();
-
-    // Lignes de dash défilantes (marquages au sol)
     ctx.save();
     ctx.strokeStyle = 'rgba(0,255,231,.2)';
     ctx.lineWidth   = 1;
@@ -741,9 +629,6 @@
     ctx.restore();
   }
 
-  /* ──────────────────────────────────────────────────────────────────
-     8. PARTICULES (explosion à la mort)
-  ────────────────────────────────────────────────────────────────── */
   const particles = [];
 
   function spawnDeathParticles() {
@@ -782,19 +667,13 @@
     }
   }
 
-  /* ──────────────────────────────────────────────────────────────────
-     9. SCORE & HUD
-  ────────────────────────────────────────────────────────────────── */
   function updateScore() {
     state.score = Math.floor(state.frame * state.speed / 10);
     document.getElementById('hud-score').textContent = state.score;
     document.getElementById('hud-best').textContent  = state.best;
-
-    // Barre de vitesse : pourcentage entre SPEED_INIT et SPEED_MAX
     const pct = ((state.speed - SPEED_INIT) / (SPEED_MAX - SPEED_INIT)) * 100;
     const bar = document.getElementById('speed-bar-fill');
     bar.style.width      = Math.min(100, pct) + '%';
-    // Couleur : cyan → jaune → rose selon vitesse
     if (pct < 40)      bar.style.background = COLORS.cyan;
     else if (pct < 75) bar.style.background = COLORS.yellow;
     else               bar.style.background = COLORS.pink;
@@ -804,32 +683,20 @@
     document.getElementById('pip-1').className = 'pip' + (player.jumpsLeft < 1 ? ' used' : '');
     document.getElementById('pip-2').className = 'pip' + (player.jumpsLeft < 2 ? ' used' : '');
   }
-
-  /* ──────────────────────────────────────────────────────────────────
-     10. BOUCLE DE JEU PRINCIPALE
-  ────────────────────────────────────────────────────────────────── */
   function gameLoop() {
     if (state.phase !== 'playing') return;
 
     state.frame++;
-
-    // Accélération progressive (jusqu'au maximum)
     if (state.speed < SPEED_MAX) state.speed += SPEED_STEP * state.speed;
-
-    // Mise à jour
     player.update();
     updateObstacles();
     updateScore();
     updateJumpPips();
-
-    // Dessin
     drawBackground();
     drawGround();
     drawObstacles();
     player.draw();
     updateDrawParticles();
-
-    // Détection de collision
     if (checkCollisions()) {
       triggerDeath();
       return;
@@ -837,14 +704,8 @@
 
     requestAnimationFrame(gameLoop);
   }
-
-  /* ──────────────────────────────────────────────────────────────────
-     11. GESTION DES PHASES (start, playing, dead)
-  ────────────────────────────────────────────────────────────────── */
   function startGame() {
     ensureAudio();
-
-    // Reset état
     state.phase    = 'playing';
     state.score    = 0;
     state.speed    = SPEED_INIT;
@@ -855,8 +716,6 @@
     nextObstacleIn     = 80;
 
     player.reset();
-
-    // Cache les écrans
     document.getElementById('screen-start').classList.add('hidden');
     document.getElementById('screen-gameover').classList.add('hidden');
 
@@ -867,22 +726,16 @@
     state.phase = 'dead';
     soundDeath();
     spawnDeathParticles();
-
-    // Sauvegarde du high score dans localStorage
     if (state.score > state.best) {
       state.best = state.score;
       state.newRecord = true;
       localStorage.setItem('n30n_best', state.best);
       soundRecord();
     }
-
-    // Affiche l'écran game over
     document.getElementById('go-score').textContent    = state.score;
     document.getElementById('go-best').textContent     = state.best;
     document.getElementById('go-new-record').textContent =
       state.newRecord ? '★ NOUVEAU RECORD ! ★' : '';
-
-    // Continue à animer les particules avant d'afficher l'écran
     function deathAnimation() {
       drawBackground();
       drawGround();
@@ -901,9 +754,6 @@
     screen.classList.add('fade-in');
   }
 
-  /* ──────────────────────────────────────────────────────────────────
-     12. ÉCRAN DE DÉMARRAGE — Animation idle
-  ────────────────────────────────────────────────────────────────── */
   function idleLoop() {
     if (state.phase !== 'start') return;
     drawBackground();
@@ -914,9 +764,6 @@
     requestAnimationFrame(idleLoop);
   }
 
-  /* ──────────────────────────────────────────────────────────────────
-     13. CONTRÔLES — Clavier, Souris, Tactile
-  ────────────────────────────────────────────────────────────────── */
   function handleJump() {
     ensureAudio();
     if (state.phase === 'playing') {
@@ -926,7 +773,6 @@
     }
   }
 
-  // Clavier
   document.addEventListener('keydown', e => {
     if (e.code === 'Space' || e.code === 'ArrowUp') {
       e.preventDefault();
@@ -934,18 +780,10 @@
     }
     if (e.code === 'Enter' && state.phase === 'dead') startGame();
   });
-
-  // Tactile
   canvas.addEventListener('touchstart', e => { e.preventDefault(); handleJump(); }, { passive: false });
   canvas.addEventListener('mousedown',  () => handleJump());
-
-  // Boutons UI
   document.getElementById('btn-start').addEventListener('click',   () => { ensureAudio(); startGame(); });
   document.getElementById('btn-restart').addEventListener('click', () => { ensureAudio(); startGame(); });
-
-  /* ──────────────────────────────────────────────────────────────────
-     14. INIT
-  ────────────────────────────────────────────────────────────────── */
   player.reset();
   document.getElementById('hud-best').textContent = state.best;
   idleLoop();
